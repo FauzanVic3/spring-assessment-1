@@ -17,6 +17,7 @@
 package my.com.vic3.spring.assessment1.controller;
 
 import java.util.List;
+import javax.validation.Valid;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import my.com.vic3.common.lib.handler.exception.BadRequestException;
@@ -28,7 +29,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,28 +42,26 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Fauzan
  */
 @RestController
-@RequestMapping("/transaction")
+@RequestMapping("/api")
 public class TransactionController {
     
     @Autowired
     TransactionService transactionService;
     
-    @GetMapping("/all")
+    @GetMapping("/v1/transactions")
     public Page<Transaction> getAll(
-            @PathParam("page") int page, 
-            @PathParam("size") int size){
+            @QueryParam("page") int page, 
+            @QueryParam("size") int size){
         
         Pageable pageable = PageRequest.of(page, size);            
         return transactionService
                 .getAll(pageable);
     }
     
-    
-    
-    @GetMapping("/filter")
+    @GetMapping("/v1/transaction")
     public List<Transaction> getByFilter(
-            @PathParam("page") int page, 
-            @PathParam("size") int size, 
+            @QueryParam("page") int page, 
+            @QueryParam("size") int size, 
             @Nullable @QueryParam("customer-id") Long customerId, 
             @Nullable @QueryParam("account-number") Long accountNumber,
             @Nullable @QueryParam("description") String description){
@@ -72,4 +75,35 @@ public class TransactionController {
                 );                
     }
     
+    @PostMapping("/v1/transaction")
+    public Transaction create(@RequestBody @Valid Transaction transaction){
+        return transactionService
+                .createTransaction(transaction)
+                .orElseThrow(
+                        () -> new BadRequestException("Unable to add transaction")
+                );
+    }
+    
+    @PutMapping("/v1/transaction")
+    public Transaction update(@RequestBody @Valid Transaction transaction){
+        
+        if(transaction == null) throw new BadRequestException("Empty request to update");
+        if(transaction.getId() == null) throw new BadRequestException("ID for transaction is empty");
+        
+        return transactionService
+                .updateTransaction(transaction)
+                .orElseThrow(
+                        () -> new BadRequestException("Unable to update transaction")
+                );
+    }
+    
+    @DeleteMapping("/v1/transaction")
+    public String delete(@PathParam("id") String id){
+        
+        if(id == null) throw new BadRequestException("ID to delete not provided");
+        
+        return transactionService
+                .deleteTransaction(id);
+                
+    }
 }

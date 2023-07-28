@@ -18,12 +18,15 @@ package my.com.vic3.spring.assessment1.repository;
 
 import java.util.List;
 import java.util.Optional;
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 import my.com.vic3.spring.assessment1.model.Transaction;
 import my.com.vic3.spring.assessment1.repository.custom.TransactionRepositoryCustom;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -31,21 +34,15 @@ import org.springframework.data.repository.query.Param;
  */
 public interface TransactionRepository extends JpaRepository<Transaction, Integer>, TransactionRepositoryCustom{
     
-    String NATIVE_QUERY = "SELECT * FROM transaction t WHERE t.id is not null ";
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")})
+    @Transactional
+    Optional<Transaction> findById(Long id);
     
     Optional<List<Transaction>> findByCustomerId(Pageable pageable, Long customerId);
+    
     Optional<List<Transaction>> findByDescription(Pageable pageable, String description);
+    
     Optional<List<Transaction>> findByAccountNumber(Pageable pageable, Long accountNumber);
-    
-//    @Query(
-//            value = NATIVE_QUERY 
-//                    + "AND t.customer_id = :customerId "
-//                    + "AND t.account_number = :accountNumber "
-//                    + "AND t.description = :description ",
-//            nativeQuery = true            
-//    )
-//    Optional<List<Transaction>> findByFilter(@Param("customerId") String customerId, @Param("accountNumber") String accountNumber, @Param("description") String description, Pageable pageable);
-    
-
-            
+                
 }

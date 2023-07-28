@@ -14,17 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package my.com.vic3.spring.assessment1.repository;
-
-import java.util.List;
-import java.util.Optional;
-import my.com.vic3.spring.assessment1.model.Customer;
-import org.springframework.data.jpa.repository.JpaRepository;
+package my.com.vic3.spring.assessment1.helper;
 
 /**
  *
  * @author Fauzan
  */
-public interface CustomerRepository extends JpaRepository<Customer, Integer>{
-    Optional<Customer> findByCustomerId(int customerId);
+public class APIConstant {
+
+    public static final String DATE_TIME_PATTERN = "dd/MM/yyyy HH:mm:ss";
+    public static final String DATE_PATTERN = "dd/MM/yyyy";
+    public static final String TIME_PATTERN = "HH:mm:ss";
+
 }

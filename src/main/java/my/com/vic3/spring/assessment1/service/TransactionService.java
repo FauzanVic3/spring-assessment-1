@@ -19,11 +19,12 @@ package my.com.vic3.spring.assessment1.service;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import my.com.vic3.spring.assessment1.helper.JSONUtil;
 import my.com.vic3.spring.assessment1.model.Transaction;
 import my.com.vic3.spring.assessment1.repository.TransactionRepository;
+import org.hibernate.LockMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -62,5 +63,57 @@ public class TransactionService {
                 accountNumber != null ? String.valueOf(accountNumber) : "", 
                 description,
                 pageable);
+    }
+    
+    public Optional<Transaction> createTransaction(Transaction transaction){
+                
+        if(transaction != null){
+            return Optional.ofNullable(transactionRepository.save(transaction));
+        }else{
+            return null;
+        }
+    }
+    
+    public Optional<Transaction> updateTransaction(Transaction transaction){
+        
+        Long l = transaction.getId();
+        
+        log.info("Update transaction id : " + l);
+        
+//        Transaction t = transactionRepository.getReferenceById(l.intValue());
+        Optional<Transaction> t1 = transactionRepository.findById(l);
+        
+        if(t1.isPresent()){
+            Transaction t = t1.get();
+            t.setAccountNumber(JSONUtil.nullOrString(transaction.getAccountNumber(), t.getAccountNumber()));
+            t.setCustomerId(JSONUtil.nullOrString(transaction.getCustomerId(), t.getCustomerId()));
+            t.setDescription(JSONUtil.nullOrString(transaction.getDescription(), t.getDescription()));
+            t.setTrxAmount(JSONUtil.nullOrString(transaction.getTrxAmount(), t.getTrxAmount()));
+            t.setTrxDate(JSONUtil.nullOrString(transaction.getTrxDate(), t.getTrxDate()));
+            t.setTrxTime(JSONUtil.nullOrString(transaction.getTrxTime(), t.getTrxTime()));
+
+            return Optional.ofNullable(transactionRepository.save(t));
+        }else{
+            return null;
+        }
+    }
+    
+    public String deleteTransaction(String id){
+        
+        Long l = Long.getLong(id);
+        
+        log.info("Delete transaction id : " + l);
+        
+        Optional<Transaction> t1 = transactionRepository.findById(l);
+        
+        if(t1.isPresent()){
+            Transaction t = t1.get();
+            
+            transactionRepository.delete(t);
+            
+            return "Delete success";
+        }else{
+            return "Delete failed. Record with that ID is not found";
+        }
     }
 }
